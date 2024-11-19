@@ -6,6 +6,7 @@ config :tasks_api, TasksApi.Repo,
   password: "postgres",
   hostname: "localhost",
   database: "tasks_api_dev",
+  port: 5433,
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
