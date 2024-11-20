@@ -5,6 +5,7 @@ defmodule TasksApi.Accounts.Account do
   schema "accounts" do
     field :email, :string
     field :hash_password, :string
+    has_one :user, TasksApi.Users.User
 
     timestamps(type: :utc_datetime)
   end

@@ -24,12 +24,12 @@ defmodule TasksApiWeb.Auth.Guardian do
   end
 
   def authenticate(email, password) do
-    with %Account{} = account <- Accounts.get_account_by_email(email),
-         true <- validate_password(password, account.hash_password) do
+    with {:account_fetch, %Account{} = account} <- {:account_fetch, Accounts.get_account_by_email(email)},
+         {:is_valid_password, true} <- {:is_valid_password, validate_password(password, account.hash_password)} do
       create_token(account)
     else
-      nil -> {:error, :unauthorized}
-      false -> {:error, :unauthorized}
+      {:account_fetch, nil} -> {:error, :unauthorized}
+      {:is_valid_password, false} -> {:error, :unauthorized}
     end
   end
 
