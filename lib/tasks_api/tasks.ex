@@ -95,20 +95,6 @@ defmodule TasksApi.Tasks do
     |> Repo.update()
   end
 
-
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking task changes.
-
-  ## Examples
-
-      iex> change_task(task)
-      %Ecto.Changeset{data: %Task{}}
-
-  """
-  def change_task(%Task{} = task, attrs \\ %{}) do
-    Task.changeset(task, attrs)
-  end
-
   defp filter_by_user_id(query, nil), do: query
   defp filter_by_user_id(query, user_id), do: query |> where([t], t.user_id == ^user_id)
 

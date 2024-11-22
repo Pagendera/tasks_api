@@ -1,63 +1,143 @@
 defmodule TasksApi.TasksTest do
-  use TasksApi.DataCase
+  use TasksApi.DataCase, async: true
 
   alias TasksApi.Tasks
+  alias TasksApi.Tasks.Task
+  alias TasksApi.Users.User
+  alias TasksApi.Accounts.Account
 
-  describe "tasks" do
-    alias TasksApi.Tasks.Task
+  describe "list_tasks/1" do
+    test "returns all tasks without filters" do
+      task1 = insert_task()
+      task2 = insert_task()
 
-    import TasksApi.TasksFixtures
+      tasks = Tasks.list_tasks(%{})
 
-    @invalid_attrs %{status: nil, description: nil, title: nil}
-
-    test "list_tasks/0 returns all tasks" do
-      task = task_fixture()
-      assert Tasks.list_tasks() == [task]
+      assert length(tasks) == 2
+      assert Enum.any?(tasks, &(&1.id == task1.id))
+      assert Enum.any?(tasks, &(&1.id == task2.id))
     end
 
-    test "get_task!/1 returns the task with given id" do
-      task = task_fixture()
-      assert Tasks.get_task!(task.id) == task
+    test "filters tasks by user_id" do
+      user = insert_user()
+      task1 = insert_task(%{user_id: user.id})
+      insert_task()
+
+      tasks = Tasks.list_tasks(%{"user_id" => user.id})
+
+      assert length(tasks) == 1
+      assert hd(tasks).id == task1.id
     end
 
-    test "create_task/1 with valid data creates a task" do
-      valid_attrs = %{status: "some status", description: "some description", title: "some title"}
+    test "filters tasks by status" do
+      task1 = insert_task(%{status: "in_work"})
+      insert_task(%{status: "completed"})
 
+      tasks = Tasks.list_tasks(%{"status" => "in_work"})
+
+      assert length(tasks) == 1
+      assert hd(tasks).id == task1.id
+    end
+
+    test "filters tasks by both user_id and status" do
+      user = insert_user()
+      task1 = insert_task(%{user_id: user.id, status: "in_work"})
+      insert_task(%{user_id: user.id, status: "completed"})
+      insert_task(%{status: "in_work"})
+
+      tasks = Tasks.list_tasks(%{"user_id" => user.id, "status" => "in_work"})
+
+      assert length(tasks) == 1
+      assert hd(tasks).id == task1.id
+    end
+  end
+
+  describe "get_task/1" do
+    test "returns the task with the given id" do
+      task = insert_task()
+      fetched_task = Tasks.get_task(task.id)
+
+      assert fetched_task.id == task.id
+    end
+
+    test "returns an error for invalid id type" do
+      assert {:error, message: "Wrong type"} = Tasks.get_task("invalid")
+    end
+  end
+
+  describe "create_task/1" do
+    test "creates a task with valid data" do
+      valid_attrs = %{title: "Test Task", description: "Task description", status: "in_work"}
       assert {:ok, %Task{} = task} = Tasks.create_task(valid_attrs)
-      assert task.status == "some status"
-      assert task.description == "some description"
-      assert task.title == "some title"
+
+      assert task.title == "Test Task"
+      assert task.description == "Task description"
+      assert task.status == "in_work"
     end
 
-    test "create_task/1 with invalid data returns error changeset" do
-      assert {:error, %Ecto.Changeset{}} = Tasks.create_task(@invalid_attrs)
+    test "returns error changeset with invalid data" do
+      invalid_attrs = %{title: nil, description: nil}
+      assert {:error, changeset} = Tasks.create_task(invalid_attrs)
+
+      refute changeset.valid?
+      assert %{title: ["can't be blank"], description: ["can't be blank"]} = errors_on(changeset)
+    end
+  end
+
+  describe "update_task/2" do
+    test "updates a task with valid data" do
+      task = insert_task()
+      update_attrs = %{status: "completed"}
+
+      assert {:ok, %Task{} = updated_task} = Tasks.update_task(task, update_attrs)
+      assert updated_task.status == "completed"
+    end
+  end
+
+  describe "take_task/2 and take_task/3" do
+    test "assigns a task to a user with default status 'in_work'" do
+      task = insert_task()
+      user = insert_user()
+
+      assert {:ok, %Task{} = updated_task} = Tasks.take_task(task.id, user)
+      assert updated_task.user_id == user.id
+      assert updated_task.status == "in_work"
     end
 
-    test "update_task/2 with valid data updates the task" do
-      task = task_fixture()
-      update_attrs = %{status: "some updated status", description: "some updated description", title: "some updated title"}
+    test "assigns a task to a user with custom status" do
+      task = insert_task()
+      user = insert_user()
 
-      assert {:ok, %Task{} = task} = Tasks.update_task(task, update_attrs)
-      assert task.status == "some updated status"
-      assert task.description == "some updated description"
-      assert task.title == "some updated title"
+      assert {:ok, %Task{} = updated_task} = Tasks.take_task(task.id, user, "completed")
+      assert updated_task.user_id == user.id
+      assert updated_task.status == "completed"
     end
+  end
 
-    test "update_task/2 with invalid data returns error changeset" do
-      task = task_fixture()
-      assert {:error, %Ecto.Changeset{}} = Tasks.update_task(task, @invalid_attrs)
-      assert task == Tasks.get_task!(task.id)
-    end
+  defp insert_task(attrs \\ %{}) do
+    default_attrs = %{title: "Default Task", description: "Default description"}
+    {:ok, task} = Tasks.create_task(Map.merge(default_attrs, attrs))
+    task
+  end
 
-    test "delete_task/1 deletes the task" do
-      task = task_fixture()
-      assert {:ok, %Task{}} = Tasks.delete_task(task)
-      assert_raise Ecto.NoResultsError, fn -> Tasks.get_task!(task.id) end
-    end
+  defp insert_user(attrs \\ %{}) do
+    account = insert_account()
 
-    test "change_task/1 returns a task changeset" do
-      task = task_fixture()
-      assert %Ecto.Changeset{} = Tasks.change_task(task)
-    end
+    attrs = Map.put_new(attrs, :account_id, account.id)
+
+    %User{}
+    |> Ecto.Changeset.cast(attrs, [:account_id])
+    |> Ecto.Changeset.validate_required([:account_id])
+    |> Ecto.Changeset.foreign_key_constraint(:account_id)
+    |> TasksApi.Repo.insert!()
+  end
+
+  defp insert_account() do
+    default_attrs = %{email: "Test Account", hash_password: "password"}
+
+    %Account{}
+    |> Ecto.Changeset.cast(default_attrs, [:email, :hash_password])
+    |> Ecto.Changeset.validate_required([:email, :hash_password])
+    |> TasksApi.Repo.insert!()
   end
 end

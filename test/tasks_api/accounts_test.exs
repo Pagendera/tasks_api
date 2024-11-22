@@ -1,61 +1,67 @@
 defmodule TasksApi.AccountsTest do
-  use TasksApi.DataCase
+  use TasksApi.DataCase, async: true
 
   alias TasksApi.Accounts
+  alias TasksApi.Accounts.Account
 
-  describe "accounts" do
-    alias TasksApi.Accounts.Account
+  describe "get_account!/1" do
+    test "returns the account with the given id" do
+      account = insert_account()
+      fetched_account = Accounts.get_account!(account.id)
 
-    import TasksApi.AccountsFixtures
-
-    @invalid_attrs %{email: nil, hash_password: nil}
-
-    test "list_accounts/0 returns all accounts" do
-      account = account_fixture()
-      assert Accounts.list_accounts() == [account]
+      assert fetched_account.id == account.id
+      assert fetched_account.email == account.email
     end
 
-    test "get_account!/1 returns the account with given id" do
-      account = account_fixture()
-      assert Accounts.get_account!(account.id) == account
+    test "raises Ecto.NoResultsError if the account does not exist" do
+      assert_raise Ecto.NoResultsError, fn ->
+        Accounts.get_account!(123456)
+      end
+    end
+  end
+
+  describe "get_account_by_email/1" do
+    test "returns the account with the given email" do
+      account = insert_account()
+      fetched_account = Accounts.get_account_by_email(account.email)
+
+      assert fetched_account.id == account.id
     end
 
-    test "create_account/1 with valid data creates a account" do
-      valid_attrs = %{email: "some email", hash_password: "some hash_password"}
+    test "returns nil if the account does not exist" do
+      assert Accounts.get_account_by_email("nonexistent@example.com") == nil
+    end
+  end
 
+  describe "create_account/1" do
+    test "creates an account with valid data" do
+      valid_attrs = %{email: "test@example.com", hash_password: "password123"}
       assert {:ok, %Account{} = account} = Accounts.create_account(valid_attrs)
-      assert account.email == "some email"
-      assert account.hash_password == "some hash_password"
+
+      assert account.email == "test@example.com"
+      assert account.hash_password != "password123"
     end
 
-    test "create_account/1 with invalid data returns error changeset" do
-      assert {:error, %Ecto.Changeset{}} = Accounts.create_account(@invalid_attrs)
+    test "returns error changeset with invalid data" do
+      invalid_attrs = %{email: nil, hash_password: nil}
+      assert {:error, changeset} = Accounts.create_account(invalid_attrs)
+
+      refute changeset.valid?
+      assert %{email: ["can't be blank"], hash_password: ["can't be blank"]} = errors_on(changeset)
     end
 
-    test "update_account/2 with valid data updates the account" do
-      account = account_fixture()
-      update_attrs = %{email: "some updated email", hash_password: "some updated hash_password"}
+    test "returns error if email is not unique" do
+      existing_account = insert_account()
+      duplicate_attrs = %{email: existing_account.email, hash_password: "password123"}
 
-      assert {:ok, %Account{} = account} = Accounts.update_account(account, update_attrs)
-      assert account.email == "some updated email"
-      assert account.hash_password == "some updated hash_password"
+      assert {:error, changeset} = Accounts.create_account(duplicate_attrs)
+      assert %{email: ["has already been taken"]} = errors_on(changeset)
     end
+  end
 
-    test "update_account/2 with invalid data returns error changeset" do
-      account = account_fixture()
-      assert {:error, %Ecto.Changeset{}} = Accounts.update_account(account, @invalid_attrs)
-      assert account == Accounts.get_account!(account.id)
-    end
-
-    test "delete_account/1 deletes the account" do
-      account = account_fixture()
-      assert {:ok, %Account{}} = Accounts.delete_account(account)
-      assert_raise Ecto.NoResultsError, fn -> Accounts.get_account!(account.id) end
-    end
-
-    test "change_account/1 returns a account changeset" do
-      account = account_fixture()
-      assert %Ecto.Changeset{} = Accounts.change_account(account)
-    end
+  defp insert_account(attrs \\ %{}) do
+    default_attrs = %{email: "user@example.com", hash_password: "password123"}
+    {:ok, account} = Accounts.create_account(Map.merge(default_attrs, attrs))
+    account
   end
 end
