@@ -12,16 +12,12 @@ defmodule TasksApiWeb.TaskJSON do
   Renders a single task.
   """
   def show(%{task: task}) do
-    %{data: data(task)}
-  end
-
-  def take_task(%{task: task}) do
     %{
       message: "OK",
       task: data(task)
     }
   end
-
+  
   defp data(%Task{} = task) do
     %{
       id: task.id,

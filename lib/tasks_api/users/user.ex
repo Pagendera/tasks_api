@@ -3,7 +3,6 @@ defmodule TasksApi.Users.User do
   import Ecto.Changeset
 
   schema "users" do
-    field :name, :string
     belongs_to :account, TasksApi.Accounts.Account
     has_many :task, TasksApi.Tasks.Task
 
@@ -13,7 +12,7 @@ defmodule TasksApi.Users.User do
   @doc false
   def changeset(user, attrs) do
     user
-    |> cast(attrs, [:account_id, :name])
+    |> cast(attrs, [:account_id])
     |> validate_required([:account_id])
   end
 end
