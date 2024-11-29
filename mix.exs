@@ -43,7 +43,8 @@ defmodule TasksApi.MixProject do
       {:dns_cluster, "~> 0.1.1"},
       {:bandit, "~> 1.2"},
       {:guardian, "~> 2.0"},
-      {:bcrypt_elixir, "~> 3.0"}
+      {:bcrypt_elixir, "~> 3.0"},
+      {:ecto_enum, "~> 1.4"}
     ]
   end
 

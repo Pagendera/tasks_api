@@ -71,7 +71,7 @@ defmodule TasksApi.TasksTest do
 
       assert task.title == "Test Task"
       assert task.description == "Task description"
-      assert task.status == "in_work"
+      assert task.status == :in_work
     end
 
     test "returns error changeset with invalid data" do
@@ -90,11 +90,11 @@ defmodule TasksApi.TasksTest do
 
       assert {:ok, %Task{} = updated_task} = Tasks.update_task(task, %{"account_id" => account.id, "status" => "in_work"})
       assert updated_task.account_id == account.id
-      assert updated_task.status == "in_work"
+      assert updated_task.status == :in_work
 
       assert {:ok, %Task{} = updated_task} = Tasks.update_task(task, %{"account_id" => account.id, "status" => "completed"})
       assert updated_task.account_id == account.id
-      assert updated_task.status == "completed"
+      assert updated_task.status == :completed
     end
   end
 

@@ -14,7 +14,7 @@ defmodule TasksApiWeb.TaskController do
   def take_task(conn, %{"id" => task_id, "status" => status} = attrs) do
     with {:task_fetch, %Task{} = task} <- {:task_fetch, Tasks.get_task(task_id)},
          {:is_valid_account, true} <- {:is_valid_account, task.account_id == conn.assigns.account.id},
-         {:is_valid_status, true} <- {:is_valid_status, is_valid_status(status)} do
+         {:is_valid_status, true} <- {:is_valid_status, StatusEnum.valid_value?(status)} do
 
       {:ok, task} = Tasks.update_task(task, attrs |> Map.merge(%{"account_id" => conn.assigns.account.id}))
 
@@ -48,6 +48,4 @@ defmodule TasksApiWeb.TaskController do
   defp is_task_available?(task) do
     is_nil(task.account_id)
   end
-
-  defp is_valid_status(status), do: "#{status}" == "completed"
 end

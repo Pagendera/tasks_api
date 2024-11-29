@@ -5,7 +5,7 @@ defmodule TasksApi.Tasks.Task do
   schema "tasks" do
     field :title, :string
     field :description, :string
-    field :status, :string
+    field :status, StatusEnum
     belongs_to :account, TasksApi.Accounts.Account
 
     timestamps(type: :utc_datetime)
@@ -16,6 +16,5 @@ defmodule TasksApi.Tasks.Task do
     task
     |> cast(attrs, [:title, :description, :status, :account_id])
     |> validate_required([:title, :description])
-    |> validate_inclusion(:status, ["in_work", "completed"])
   end
 end
