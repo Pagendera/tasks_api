@@ -6,7 +6,6 @@ defmodule TasksApiWeb.TaskControllerTest do
   alias TasksApi.Repo
   alias TasksApi.Tasks.Task
   alias TasksApi.Accounts.Account
-  alias TasksApi.Users.User
 
   setup %{conn: conn} do
     conn = authorize_user(conn, "test@example.com", "password123")
@@ -36,7 +35,7 @@ defmodule TasksApiWeb.TaskControllerTest do
 
       assert response["task"]["id"] == task.id
       assert response["task"]["status"] == "in_work"
-      assert response["task"]["user_id"] == conn.assigns.user.id
+      assert response["task"]["account_id"] == conn.assigns.account.id
     end
 
     test "handles task not existing", %{conn: conn} do
@@ -54,14 +53,10 @@ defmodule TasksApiWeb.TaskControllerTest do
       hash_password: hash_password
     } |> Repo.insert!()
 
-    user = %User{
-      account_id: account.id,
-    } |> Repo.insert!()
-
     {:ok, token, _} = encode_and_sign(account, %{}, token_type: :access)
 
     conn
     |> put_req_header("authorization", "Bearer " <> token)
-    |> assign(:user, user)
+    |> assign(:account, account)
   end
 end

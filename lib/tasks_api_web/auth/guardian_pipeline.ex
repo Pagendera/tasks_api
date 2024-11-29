@@ -1,8 +1,8 @@
-defmodule TasksApi.GuardianPipeline do
+defmodule TasksApiWeb.Auth.GuardianPipeline do
   use Guardian.Plug.Pipeline,
     otp_app: :tasks_api,
      module: TasksApiWeb.Auth.Guardian,
-    error_handler: TasksApi.GuardianErrorHandler
+    error_handler: TasksApiWeb.Plugs.GuardianErrorHandler
 
   plug Guardian.Plug.VerifyHeader
   plug Guardian.Plug.VerifySession

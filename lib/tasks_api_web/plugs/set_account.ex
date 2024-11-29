@@ -1,21 +1,20 @@
-defmodule TasksApiWeb.Auth.SetUser do
+defmodule TasksApiWeb.Plugs.SetAccount do
   import Plug.Conn
-  alias TasksApi.Users
+  alias TasksApi.Accounts
 
   def init(_options) do
-
   end
 
   def call(conn, _options) do
-    if conn.assigns[:user] do
+    if conn.assigns[:account] do
       conn
     else
       account_id = get_session(conn, :account_id)
 
-      user = Users.get_user_by_account_id(account_id)
+      account = Accounts.get_account(account_id)
 
       cond do
-        account_id && user -> assign(conn, :user, user)
+        account_id && account -> assign(conn, :account, account)
         true -> assign(conn, :account, nil)
       end
     end

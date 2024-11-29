@@ -3,7 +3,6 @@ defmodule TasksApi.TasksTest do
 
   alias TasksApi.Tasks
   alias TasksApi.Tasks.Task
-  alias TasksApi.Users.User
   alias TasksApi.Accounts.Account
 
   describe "list_tasks/1" do
@@ -18,12 +17,12 @@ defmodule TasksApi.TasksTest do
       assert Enum.any?(tasks, &(&1.id == task2.id))
     end
 
-    test "filters tasks by user_id" do
-      user = insert_user()
-      task1 = insert_task(%{user_id: user.id})
+    test "filters tasks by account_id" do
+      account = insert_account()
+      task1 = insert_task(%{account_id: account.id})
       insert_task()
 
-      tasks = Tasks.list_tasks(%{"user_id" => user.id})
+      tasks = Tasks.list_tasks(%{"account_id" => account.id})
 
       assert length(tasks) == 1
       assert hd(tasks).id == task1.id
@@ -39,13 +38,13 @@ defmodule TasksApi.TasksTest do
       assert hd(tasks).id == task1.id
     end
 
-    test "filters tasks by both user_id and status" do
-      user = insert_user()
-      task1 = insert_task(%{user_id: user.id, status: "in_work"})
-      insert_task(%{user_id: user.id, status: "completed"})
+    test "filters tasks by both account_id and status" do
+      account = insert_account()
+      task1 = insert_task(%{account_id: account.id, status: "in_work"})
+      insert_task(%{account_id: account.id, status: "completed"})
       insert_task(%{status: "in_work"})
 
-      tasks = Tasks.list_tasks(%{"user_id" => user.id, "status" => "in_work"})
+      tasks = Tasks.list_tasks(%{"account_id" => account.id, "status" => "in_work"})
 
       assert length(tasks) == 1
       assert hd(tasks).id == task1.id
@@ -87,29 +86,14 @@ defmodule TasksApi.TasksTest do
   describe "update_task/2" do
     test "updates a task with valid data" do
       task = insert_task()
-      update_attrs = %{status: "completed"}
+      account = insert_account()
 
-      assert {:ok, %Task{} = updated_task} = Tasks.update_task(task, update_attrs)
-      assert updated_task.status == "completed"
-    end
-  end
-
-  describe "take_task/2 and take_task/3" do
-    test "assigns a task to a user with default status 'in_work'" do
-      task = insert_task()
-      user = insert_user()
-
-      assert {:ok, %Task{} = updated_task} = Tasks.take_task(task.id, user)
-      assert updated_task.user_id == user.id
+      assert {:ok, %Task{} = updated_task} = Tasks.update_task(task, %{"account_id" => account.id, "status" => "in_work"})
+      assert updated_task.account_id == account.id
       assert updated_task.status == "in_work"
-    end
 
-    test "assigns a task to a user with custom status" do
-      task = insert_task()
-      user = insert_user()
-
-      assert {:ok, %Task{} = updated_task} = Tasks.take_task(task.id, user, "completed")
-      assert updated_task.user_id == user.id
+      assert {:ok, %Task{} = updated_task} = Tasks.update_task(task, %{"account_id" => account.id, "status" => "completed"})
+      assert updated_task.account_id == account.id
       assert updated_task.status == "completed"
     end
   end
@@ -118,18 +102,6 @@ defmodule TasksApi.TasksTest do
     default_attrs = %{title: "Default Task", description: "Default description"}
     {:ok, task} = Tasks.create_task(Map.merge(default_attrs, attrs))
     task
-  end
-
-  defp insert_user(attrs \\ %{}) do
-    account = insert_account()
-
-    attrs = Map.put_new(attrs, :account_id, account.id)
-
-    %User{}
-    |> Ecto.Changeset.cast(attrs, [:account_id])
-    |> Ecto.Changeset.validate_required([:account_id])
-    |> Ecto.Changeset.foreign_key_constraint(:account_id)
-    |> TasksApi.Repo.insert!()
   end
 
   defp insert_account() do

@@ -3,10 +3,10 @@ defmodule TasksApi.Tasks.Task do
   import Ecto.Changeset
 
   schema "tasks" do
-    field :status, :string
-    field :description, :string
     field :title, :string
-    belongs_to :user, TasksApi.Users.User
+    field :description, :string
+    field :status, :string
+    belongs_to :account, TasksApi.Accounts.Account
 
     timestamps(type: :utc_datetime)
   end
@@ -14,7 +14,7 @@ defmodule TasksApi.Tasks.Task do
   @doc false
   def changeset(task, attrs) do
     task
-    |> cast(attrs, [:title, :description, :status, :user_id])
+    |> cast(attrs, [:title, :description, :status, :account_id])
     |> validate_required([:title, :description])
     |> validate_inclusion(:status, ["in_work", "completed"])
   end

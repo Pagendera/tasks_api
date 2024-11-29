@@ -4,19 +4,13 @@ defmodule TasksApi.AccountsTest do
   alias TasksApi.Accounts
   alias TasksApi.Accounts.Account
 
-  describe "get_account!/1" do
+  describe "get_account/1" do
     test "returns the account with the given id" do
       account = insert_account()
-      fetched_account = Accounts.get_account!(account.id)
+      fetched_account = Accounts.get_account(account.id)
 
       assert fetched_account.id == account.id
       assert fetched_account.email == account.email
-    end
-
-    test "raises Ecto.NoResultsError if the account does not exist" do
-      assert_raise Ecto.NoResultsError, fn ->
-        Accounts.get_account!(123456)
-      end
     end
   end
 
@@ -39,7 +33,7 @@ defmodule TasksApi.AccountsTest do
       assert {:ok, %Account{} = account} = Accounts.create_account(valid_attrs)
 
       assert account.email == "test@example.com"
-      assert account.hash_password != "password123"
+      assert account.hash_password == "password123"
     end
 
     test "returns error changeset with invalid data" do

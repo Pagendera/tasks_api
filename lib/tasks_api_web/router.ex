@@ -7,8 +7,8 @@ defmodule TasksApiWeb.Router do
   end
 
   pipeline :auth do
-    plug TasksApi.GuardianPipeline
-    plug TasksApiWeb.Auth.SetUser
+    plug TasksApiWeb.Auth.GuardianPipeline
+    plug TasksApiWeb.Plugs.SetAccount
   end
 
   scope "/api", TasksApiWeb do
