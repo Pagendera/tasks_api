@@ -22,6 +22,7 @@ defmodule TasksApiWeb.Router do
     pipe_through [:api, :auth]
 
     get "/task_list", TaskController, :index
+    post "/tasks/create", TaskController, :create
     post "/user/take_task", TaskController, :take_task
   end
 end
