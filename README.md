@@ -9,6 +9,7 @@ This project allows users to managing tasks where users can create, update, and 
 ## Features
 
 - **Tasks Check**: Returns all the tasks that can be filtered using the account_id and status parameters.
+- **Creating task**: The user creates a task that can be taken by any other user
 - **Taking task**: The user takes a task and assigns it the in_work status and his id.
 - **Completing task**: When the task is completed, the user can change the task status to completed.
 - **Idempotency**: Ensures that requests can be processed multiple times without unintended side effects.
@@ -33,7 +34,7 @@ This project allows users to managing tasks where users can create, update, and 
   {
     "email": "email@example.com",
     "password": "password",
-    "password_confirm": "password"
+    "password_confirmation": "password"
   }
 
 ## Authentication
@@ -61,6 +62,18 @@ This project allows users to managing tasks where users can create, update, and 
 
 - **Endpoint**: `/api/task_list/?status=in_work`
 - **Method**: `GET`
+  
+### Creating Task
+
+- **Endpoint**: `/api/tasks/create`
+- **Method**: `POST`
+- **Request Body**:
+  ```json
+  {
+    "title": "New task",
+    "description": "New task"
+  }
+
 
 ### Taking Task
 
