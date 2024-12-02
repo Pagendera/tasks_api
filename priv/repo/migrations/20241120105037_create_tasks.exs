@@ -10,7 +10,5 @@ defmodule TasksApi.Repo.Migrations.CreateTasks do
 
       timestamps(type: :utc_datetime)
     end
-
-    create index(:tasks, [:title, :description])
   end
 end

@@ -10,7 +10,6 @@ defmodule TasksApi.Application do
     children = [
       TasksApiWeb.Telemetry,
       TasksApi.Repo,
-      {DNSCluster, query: Application.get_env(:tasks_api, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: TasksApi.PubSub},
       # Start a worker by calling: TasksApi.Worker.start_link(arg)
       # {TasksApi.Worker, arg},

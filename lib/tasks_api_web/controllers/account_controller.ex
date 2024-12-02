@@ -9,20 +9,16 @@ defmodule TasksApiWeb.AccountController do
 
   def create(conn,
     %{"email" => _email,
-    "password" => password,
-    "password_confirm" => password_confirm} = account_params
+    "password" => _password,
+    "password_confirmation" => _password_confirmation} = account_params
     ) do
-    with {:is_password_confirmed, true} <- {:is_password_confirmed, String.equivalent?(password, password_confirm)},
-         {:is_password_valid, true} <- {:is_password_valid, String.length(password) >= 8},
-         {:ok, %Account{} = account} <- Accounts.create_account(account_params |> Map.merge(%{"hash_password" => Bcrypt.hash_pwd_salt(password)})),
+    with {:ok, %Account{} = account} <- Accounts.create_account(account_params),
          {:ok, token, _full_claims} <- Guardian.encode_and_sign(account) do
             conn
             |> Plug.Conn.put_session(:account_id, account.id)
             |> put_status(:created)
             |> render(:show_token, account: account, token: token)
     else
-      {:is_password_confirmed, false} -> json(conn, %{message: "Passwords don't match"})
-      {:is_password_valid, false} -> json(conn, %{message: "Password must be greater than or equal to 8 characters"})
       {:error, changeset} -> conn |> put_view(json: TasksApiWeb.ChangesetJSON) |> render(:error, changeset: changeset)
     end
   end
