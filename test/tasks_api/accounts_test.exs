@@ -29,11 +29,10 @@ defmodule TasksApi.AccountsTest do
 
   describe "create_account/1" do
     test "creates an account with valid data" do
-      valid_attrs = %{email: "test@example.com", hash_password: "password123"}
+      valid_attrs = %{email: "test@example.com", password: "password123", password_confirmation: "password123"}
       assert {:ok, %Account{} = account} = Accounts.create_account(valid_attrs)
 
       assert account.email == "test@example.com"
-      assert account.hash_password == "password123"
     end
 
     test "returns error changeset with invalid data" do
@@ -41,12 +40,12 @@ defmodule TasksApi.AccountsTest do
       assert {:error, changeset} = Accounts.create_account(invalid_attrs)
 
       refute changeset.valid?
-      assert %{email: ["can't be blank"], hash_password: ["can't be blank"]} = errors_on(changeset)
+      assert %{email: ["can't be blank"], password: ["can't be blank"], password_confirmation: ["can't be blank"]} = errors_on(changeset)
     end
 
     test "returns error if email is not unique" do
       existing_account = insert_account()
-      duplicate_attrs = %{email: existing_account.email, hash_password: "password123"}
+      duplicate_attrs = %{email: existing_account.email, password: "password123", password_confirmation: "password123"}
 
       assert {:error, changeset} = Accounts.create_account(duplicate_attrs)
       assert %{email: ["has already been taken"]} = errors_on(changeset)
@@ -54,7 +53,7 @@ defmodule TasksApi.AccountsTest do
   end
 
   defp insert_account(attrs \\ %{}) do
-    default_attrs = %{email: "user@example.com", hash_password: "password123"}
+    default_attrs = %{email: "user@example.com", password: "password123", password_confirmation: "password123"}
     {:ok, account} = Accounts.create_account(Map.merge(default_attrs, attrs))
     account
   end

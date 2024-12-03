@@ -42,7 +42,7 @@ defmodule TasksApiWeb.TaskControllerTest do
       conn = post(conn, ~p"/api/user/take_task", %{"id" => -1})
       response = json_response(conn, 200)
 
-      assert response["message"] == "Task doesnt exist"
+      assert response["message"] == "Unauthorized"
     end
   end
 

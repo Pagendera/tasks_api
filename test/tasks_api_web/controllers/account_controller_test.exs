@@ -8,7 +8,7 @@ defmodule TasksApiWeb.AccountControllerTest do
       account_params = %{
         "email" => "test@example.com",
         "password" => "password123",
-        "password_confirm"=> "password123"
+        "password_confirmation"=> "password123"
       }
 
       conn = post(conn, ~p"/api/accounts/register", account_params)
@@ -19,7 +19,7 @@ defmodule TasksApiWeb.AccountControllerTest do
 
   describe "POST /api/accounts/sign_in" do
     setup do
-      {:ok, account} = Accounts.create_account(%{"email" => "test@example.com", "hash_password" => Bcrypt.hash_pwd_salt("password123")})
+      {:ok, account} = Accounts.create_account(%{"email" => "test@example.com", "password" => "password123", "password_confirmation" => "password123"})
       %{account: account}
     end
 
